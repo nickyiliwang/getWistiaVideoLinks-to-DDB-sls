@@ -1,0 +1,8 @@
+/.serverless
+
+/node_modules
+
+/.webpack
+
+/.dynamodb
+

@@ -1,0 +1,97 @@
+service: wistia-video-links
+frameworkVersion: '2'
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-bundle
+  - serverless-dynamodb-local
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-east-1
+  profile: nickyiliwang
+  apiGateway:
+    shouldStartNameWithService: true
+  environment:
+    VIDEOS_TABLE_NAME: ${self:custom.WistiaVideosTable.name}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:Query
+      Resource:
+        - ${self:custom.WistiaVideosTable.arn}
+        - !Join [
+          "/",
+          ["${self:custom.WistiaVideosTable.arn}", "index", "status"],
+          ]
+
+resources:
+  Resources:
+    WistiaVideosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: WistiaVideosTable01
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: status
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: status
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+functions:
+  addItem:
+    handler: functions/addItem.handler
+    events:
+      - http:
+          method: POST
+          path: /add
+          cors: true
+
+  getItems:
+    handler: functions/getItems.handler
+    events:
+      - http:
+          method: GET
+          path: /items
+          cors: true
+
+  hello:
+    handler: functions/hello.handler
+    events:
+      - http:
+          method: GET
+          path: /
+          cors: true
+
+custom:
+  WistiaVideosTable:
+    name: !Ref WistiaVideosTable
+    arn: !GetAtt WistiaVideosTable.Arn
+
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      # local 
+      inMemory: true
+      migrate: true
+    migration:
+      dir: offline/migrations
