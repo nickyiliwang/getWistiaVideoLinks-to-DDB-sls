@@ -36,6 +36,7 @@ endpoint: "http://localhost:8000",
 const dynamodb = new AWS.DynamoDB.DocumentClient(options);
 
 6. plugins:
+  - serverless-dotenv-plugin
   - serverless-bundle
   - serverless-pseudo-parameters
   - serverless-dynamodb-local
