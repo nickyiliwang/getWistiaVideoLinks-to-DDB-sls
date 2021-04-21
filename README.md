@@ -35,4 +35,10 @@ endpoint: "http://localhost:8000",
 
 const dynamodb = new AWS.DynamoDB.DocumentClient(options);
 
-6. install Java SE Dev kit
+6. plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+  - serverless-dynamodb-local
+  - serverless-offline
+
+7. sls dynamodb install
